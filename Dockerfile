@@ -8,4 +8,4 @@ RUN mkdir /app
 ADD . /app
 WORKDIR /app
 
-CMD python /app/pythonscriptcpit3.py
+CMD python /app/cpit3telegrambot.py

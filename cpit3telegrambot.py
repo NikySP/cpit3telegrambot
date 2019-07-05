@@ -7,7 +7,6 @@ import threading
 
 TOKEN = os.getenv("TOKEN")
 GROUPID = os.getenv("GROUPID")
-updater = Updater(TOKEN)
 WEBHOOK = os.getenv("WEBHOOK")
 MESSAGE = os.getenv("MESSAGE")
 PORT = int(os.environ.get('PORT', '8443'))
@@ -17,25 +16,27 @@ ENABLE_GM = os.getenv("ENABLE_GM")
 QUESTIONS = os.getenv("QUESTIONS")
 ANSWERS = os.getenv("ANSWERS")
 DESCRIPTIONS = os.getenv("DESCRIPTIONS")
-dictQuestionsAnwers = {'bagni': [MESSAGE,"Ci sono i bagni?"]}
+dictQuestionsAnwers = {'bagni': [MESSAGE, "Ci sono i bagni?"]}
 
 
 def faq(bot, update):
-    chat_id = update.message.chat_id
-    print(chat_id)
-    for key,val in dictQuestionsAnwers.items():
-        bot.send_message(chat_id=chat_id, text="/"+ key +" - "+ val[1] )
+    fullMessage = ""
+    for key, val in dictQuestionsAnwers.items():
+        fullMessage += "/" + key + " - " + val[1] + "\n"
+    bot.send_message(chat_id=update.message.chat_id, text=fullMessage)
 
 
 def bagni(bot, update):
-    chat_id = update.message.chat_id
-    print(chat_id)
-    bot.send_message(chat_id=chat_id, text=MESSAGE)
+    bot.send_message(chat_id=update.message.chat_id, text=MESSAGE)
+
+
+
+def start(bot, update):
+    bot.send_message(chat_id=update.message.chat_id, text="Benvenuto/a nel Bot del Campus Party Italia 3 \nCon il comando /faq potrai visualizzare tutte le domande ")
 
 
 def sendGoodMorning():
-    bot_chatID = GROUPID
-    send_text = 'https://api.telegram.org/bot' + TOKEN + '/sendMessage?chat_id=' + bot_chatID + '&parse_mode=Markdown&text=' + SCHEDULED_MESSAGE
+    send_text = 'https://api.telegram.org/bot' + TOKEN + '/sendMessage?chat_id=' + GROUPID + '&parse_mode=Markdown&text=' + SCHEDULED_MESSAGE
     response = requests.get(send_text)
     return response.json()
 
@@ -53,14 +54,15 @@ if ENABLE_GM == "y":
     t.start()
 
 while True:
+    updater = Updater(TOKEN)
     answersList = ANSWERS.split(sep="|")
     questionsList = QUESTIONS.split(sep="|")
     descriptionList = DESCRIPTIONS.split(sep="|")
     for idx, val in enumerate(questionsList):
-        dictQuestionsAnwers[val] = [answersList[idx],descriptionList[idx]]
-    print(dictQuestionsAnwers)
+        dictQuestionsAnwers[val] = [answersList[idx], descriptionList[idx]]
     dp = updater.dispatcher
     dp.add_handler(CommandHandler('bagni', bagni))
+    dp.add_handler(CommandHandler('start', start))
     dp.add_handler(CommandHandler('faq', faq))
     updater.start_polling()
     updater.start_webhook(listen="0.0.0.0",
